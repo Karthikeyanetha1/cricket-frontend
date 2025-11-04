@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-const API_BASE = process.env.REACT_APP_API_BASE || 'http://localhost:3000';
-
+const API_BASE = process.env.REACT_APP_API_BASE || 'https://cricket-backend-bsl2.onrender.com';
 const BookedSlots = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
