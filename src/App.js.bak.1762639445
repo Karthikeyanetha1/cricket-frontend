@@ -1,0 +1,112 @@
+import React, {useEffect, useState} from 'react';
+
+// Single-file modern App component with embedded styles (works in CRA) export default function App(){ const API = process.env.REACT_APP_API_BASE || 'http://127.0.0.1:5000'; const [bookings, setBookings] = useState([]); const [loading, setLoading] = useState(true); const [error, setError] = useState(null); const [form, setForm] = useState({name:'', mobile:'', date:'', time:''}); const [saving, setSaving] = useState(false); const [toast, setToast] = useState(null);
+
+// inject CSS once useEffect(()=>{ const css = ` :root{ --bg:#0f172a; --card:#0b1220; --accent:#ff595e; --muted:#9aa4b2; } *{box-sizing:border-box} body, #root { height:100%; margin:0; font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; } .app-wrap{min-height:100vh; background: linear-gradient(180deg,#071029 0%, #071733 60%); color:#e6eef8; padding:28px; display:flex; align-items:flex-start; justify-content:center} .container{ width:100%; max-width:980px } .header{ display:flex; align-items:center; gap:16px; margin-bottom:20px } .logo{ width:56px; height:56px; border-radius:12px; background:linear-gradient(135deg,var(--accent),#ffb86b); display:flex; align-items:center; justify-content:center; font-weight:700; color:white; box-shadow:0 6px 18px rgba(0,0,0,0.45); transform:rotate(-6deg); } .title{ font-size:20px; font-weight:700; letter-spacing:0.6px } .subtitle{ color:var(--muted); font-size:13px }
+
+.layout{ display:grid; grid-template-columns: 360px 1fr; gap:20px }
+
+  /* left card - form */
+  .card{ background: rgba(255,255,255,0.03); border-radius:12px; padding:18px; box-shadow: 0 8px 30px rgba(2,6,23,0.6); border:1px solid rgba(255,255,255,0.03); }
+  .form h3{ margin:0 0 8px 0 }
+  .field{ display:flex; flex-direction:column; margin-bottom:10px }
+  .field label{ font-size:12px; color:var(--muted); margin-bottom:6px }
+  .input{ padding:10px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.06); background:rgba(0,0,0,0.25); color:inherit }
+  .select{ padding:10px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.06); background:rgba(0,0,0,0.22); color:inherit }
+  .btn{ display:inline-flex; align-items:center; gap:8px; padding:10px 14px; border-radius:10px; background:linear-gradient(90deg,var(--accent),#ffb86b); border:none; color:#08101a; font-weight:700; cursor:pointer }
+  .btn:disabled{ opacity:0.6; cursor:default }
+
+  /* right list */
+  .list-header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:12px }
+  .grid{ display:grid; grid-template-columns: repeat(auto-fill,minmax(220px,1fr)); gap:14px }
+  .booking{ background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); padding:12px; border-radius:10px; border:1px solid rgba(255,255,255,0.03); backdrop-filter: blur(6px); transition: transform .28s ease, box-shadow .28s ease; }
+  .booking:hover{ transform: translateY(-6px); box-shadow: 0 18px 40px rgba(2,6,23,0.6); }
+  .name{ font-weight:700 }
+  .meta{ color:var(--muted); font-size:13px; margin-top:6px }
+
+  /* toast */
+  .toast{ position:fixed; left:50%; transform:translateX(-50%); bottom:28px; background:#08121a; color:#bfe9ff; padding:10px 18px; border-radius:10px; box-shadow:0 8px 30px rgba(0,0,0,0.6); border:1px solid rgba(255,255,255,0.03) }
+
+  /* subtle animated header dots */
+  .sparkles{ margin-left:auto; display:flex; gap:6px }
+  .dot{ width:8px; height:8px; border-radius:99px; background:rgba(255,255,255,0.06); animation: pop 2s infinite; }
+  .dot:nth-child(1){ animation-delay:0s }
+  .dot:nth-child(2){ animation-delay:0.4s }
+  .dot:nth-child(3){ animation-delay:0.8s }
+  @keyframes pop{ 0%{ transform:scale(1); opacity:0.35 } 50%{ transform:scale(1.6); opacity:1 } 100%{ transform:scale(1); opacity:0.35 } }
+
+  /* responsive */
+  @media (max-width:880px){ .layout{ grid-template-columns:1fr; } .logo{ display:none } }
+`;
+const s = document.createElement('style');
+s.id = 'cricket-styles';
+s.innerHTML = css;
+document.head.appendChild(s);
+return ()=>{ const existing = document.getElementById('cricket-styles'); if(existing) existing.remove(); }
+
+},[]);
+
+useEffect(()=>{ fetch(${API}/bookings).then(r=>r.json()).then(d=>{ setBookings(d); setLoading(false); }).catch(e=>{ setError(e.message); setLoading(false); }); },[]);
+
+function handleChange(e){ const {name,value} = e.target; setForm(prev=>({...prev,[name]:value})); }
+
+async function handleSubmit(e){ e.preventDefault(); setSaving(true); setToast(null); try{ const res = await fetch(${API}/book, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(form) }); if(!res.ok) throw new Error('Failed to save'); const saved = await res.json(); setBookings(prev=>[saved, ...prev]); setForm({name:'', mobile:'', date:'', time:''}); setToast('✅ Booking successful!'); setTimeout(()=>setToast(null),2800); }catch(err){ setToast('❌ Could not save'); setTimeout(()=>setToast(null),2800); } setSaving(false); }
+
+return ( <div className="app-wrap"> <div className="container"> <div className="header"> <div className="logo">BC</div> <div> <div className="title">📅 Booked Slots</div> <div className="subtitle">Simple, fast, and beautiful booking UI</div> </div> <div className="sparkles" aria-hidden> <div className="dot"></div> <div className="dot"></div> <div className="dot"></div> </div> </div>
+
+<div className="layout">
+      <div className="card form">
+        <h3>📌 Book a Slot</h3>
+        <p className="subtitle">Reserve your time — slots saved instantly.</p>
+        <form onSubmit={handleSubmit} style={{marginTop:12}}>
+          <div className="field">
+            <label>Name</label>
+            <input name="name" value={form.name} onChange={handleChange} className="input" placeholder="Your name" required />
+          </div>
+          <div className="field">
+            <label>Mobile</label>
+            <input name="mobile" value={form.mobile} onChange={handleChange} className="input" placeholder="Mobile number" required />
+          </div>
+          <div className="field">
+            <label>Date</label>
+            <input name="date" value={form.date} onChange={handleChange} type="date" className="input" required />
+          </div>
+          <div className="field">
+            <label>Time (e.g. 6PM - 7PM)</label>
+            <input name="time" value={form.time} onChange={handleChange} className="input" placeholder="6PM - 7PM" required />
+          </div>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:8}}>
+            <button className="btn" type="submit" disabled={saving}>{saving? 'Saving...':'🚀 Submit'}</button>
+            <div style={{color:'var(--muted)', fontSize:13}}>{bookings.length} bookings</div>
+          </div>
+        </form>
+      </div>
+
+      <div>
+        <div className="list-header">
+          <h3 style={{margin:0}}>👥 Recent Bookings</h3>
+          <div style={{color:'var(--muted)'}}>{loading? 'Loading...': `${bookings.length} total`}</div>
+        </div>
+
+        <div className="grid">
+          {loading && <div style={{color:'var(--muted)'}}>Loading...</div>}
+          {error && <div style={{color:'#ffb0b0'}}>Error: {error}</div>}
+          {!loading && bookings.length===0 && <div style={{color:'var(--muted)'}}>No bookings yet — be the first!</div>}
+
+          {bookings.map(b=> (
+            <div key={b._id} className="booking">
+              <div className="name">{b.name}</div>
+              <div style={{marginTop:6}}>{b.date} • {b.time}</div>
+              <div className="meta">{b.mobile}</div>
+            </div>
+          ))}
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  {toast && <div className="toast">{toast}</div>}
+</div>
+
+); }
